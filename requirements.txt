@@ -1,3 +1,4 @@
 pillow
 requests
 yt-dlp
+tkinter

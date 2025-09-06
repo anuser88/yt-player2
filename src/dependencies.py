@@ -58,7 +58,7 @@ def add_to_path(bin_path):
         shell_profile = os.path.expanduser("~/.bashrc")
         with open(shell_profile, "a") as f:
             f.write(f'\nexport PATH="{bin_path}:$PATH"\n')
-        print(f"Run `source {shell_profile}` or restart your terminal to use FFmpeg.")
+        print(f"Run `source {shell_profile}` or restart your terminal to use.")
 
 def update_ytdlp():
     os.system("yt-dlp -U")

@@ -1,5 +1,6 @@
 import subprocess
 import threading
+import time
 import yt_dlp
 def play(VIDEO_URL,res=720):
     print("Preparing...")
@@ -10,8 +11,9 @@ def play(VIDEO_URL,res=720):
     ffplay = subprocess.Popen(["ffplay", "-autoexit", "-window_title", video_title, "-i", "pipe:0"],stdin=subprocess.PIPE,stdout=subprocess.DEVNULL,stderr=subprocess.STDOUT)
     with subprocess.Popen(cmd, stdout=ffplay.stdin) as ytdlp_proc:
         ytdlp_proc.communicate()
+    time.sleep(1.5)
+    input("Enter to close...")
     ffplay.terminate()
-    input("Enter to continue...")
 def createplayer(url,res):
     return threading.Thread(target=play, args=(url,res,))
 if __name__=="__main__":

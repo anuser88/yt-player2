@@ -3,11 +3,20 @@ from io import BytesIO
 from PIL import Image, ImageTk
 import queue
 import requests
+import sys
 import threading
 import time
 import tkinter as tk
 import video
 import yt_dlp
+
+class exited:
+    def __init__(self):
+        self.e=False
+    def exit(self):
+        self.e=True
+    def stat(self):
+        return self.e
 
 def search(query,q):
     recommendations = []
@@ -38,10 +47,7 @@ def show(q,frame,root):
         while True:
             rec=q.get_nowait()
             if rec=="taskkill":
-                return
-            tl=tk.Label(frame, text=rec['title'], wraplength=400, justify="left", font=("Arial", 12, "bold"))
-            tl.pack(pady=5, anchor="w")
-            tl.bind("<Button-1>", lambda e, url=f"https://youtube.com/watch?v={rec['id']}": video.createplayer(url,720).start())
+                return sys.exit()
             if rec['id']:
                 response = requests.get(f"https://img.youtube.com/vi/{rec['id']}/hqdefault.jpg")
                 img_data = Image.open(BytesIO(response.content))
@@ -50,7 +56,10 @@ def show(q,frame,root):
                 lbl = tk.Label(frame, image=img)
                 lbl.image = img
                 lbl.pack(pady=5)
-                lbl.bind("<Button-1>", lambda e, url=f"https://youtube.com/watch?v={rec['id']}": video.createplayer(url,720).start())
+                lbl.bind("<Button-1>", lambda e, url=f"https://youtube.com/watch?v={rec['id']}": video.createplayer(url,1080).start())
+            tl=tk.Label(frame, text=rec['title'], wraplength=400, font=("Arial", 12, "bold"))
+            tl.pack(padx=20, pady=10, anchor="center")
+            tl.bind("<Button-1>", lambda e, url=f"https://youtube.com/watch?v={rec['id']}": video.createplayer(url,1080).start())
     except queue.Empty:
         pass
     root.after(50, show, q, frame, root)
@@ -59,13 +68,14 @@ def clear_rec(frame):
     for widget in frame.winfo_children():
         widget.destroy()
 
-def prompt(q,frame):
+def prompt(q,frame,ex):
     inp=""
     print("Type 'help' for more info")
-    while inp!="exit":
+    while not ex.stat():
         inp=input(">>>")
         if inp=="help":
             print("Type 'search' to search")
+            print("Type 'watch' to watch from an URL")
             print("Type 'clear' to clear search result")
             print("Type 'exit' to quit")
         if inp=="search":
@@ -73,10 +83,14 @@ def prompt(q,frame):
             print("Rendering...")
         if inp=="clear":
             clear_rec(frame)
+        if inp=="watch":
+            video.createplayer(input("URL: "),1080).start()
         if inp=="exit":
             q.put("taskkill")
+            return
 
 def start():
+    print("\nyt-player2 v1.0.2")    
     root = tk.Tk()
     root.title("YouTube Search")
     canvas = tk.Canvas(root, width=450, height=600)
@@ -91,10 +105,13 @@ def start():
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
     q=queue.Queue()
-    s=threading.Thread(target=prompt, args=(q,frame,))
+    ex=exited()
+    s=threading.Thread(target=prompt, args=(q,frame,ex))
     s.start()
     clear_rec(frame)
     show(q,frame,root)
     root.mainloop()
-    s.join()
+    ex.exit()
+    print("Press enter to exit")
+    sys.exit()
 start()

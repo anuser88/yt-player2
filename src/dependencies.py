@@ -62,6 +62,7 @@ def add_to_path(bin_path):
 
 def update_ytdlp():
     os.system("yt-dlp -U")
+    os.system("py -m pip install --upgrade yt-dlp")
 
 system = platform.system()
 if not is_ffmpeg_installed():
@@ -71,6 +72,7 @@ if not is_ffmpeg_installed():
         bin_path = download_ffmpeg_windows(dest_folder)
     else:
         bin_path = download_ffmpeg_unix(dest_folder)
+    os.makedirs(os.path.dirname(bin_path), exist_ok=True)
     add_to_path(bin_path)
     print("FFmpeg installation completed.")
 else:
@@ -85,6 +87,7 @@ if not is_ytdlp_installed():
     else:
         save_path = os.path.join(dest_folder, "yt-dlp")
         url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp"
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     urllib.request.urlretrieve(url, save_path)
     add_to_path(dest_folder)
     print("yt-dlp installation completed.")

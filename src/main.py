@@ -35,10 +35,15 @@ if osname == "Darwin":
 download_url = asset["browser_download_url"]
 filename = asset["name"]
 latest_version = release["tag_name"]
+current_exe = sys.executable
+backup_exe = current_exe + ".bak"
 CURRENT_VERSION="version-unknown"
-if file_sha256(sys.executable) == asset["digest"] or not getattr(sys, "frozen", False):
+if file_sha256(current_exe) == asset["digest"] or not getattr(sys, "frozen", False):
     CURRENT_VERSION=latest_version
     print("Already up-to-date")
+    if os.path.exists(backup_exe):
+        if input("Would you like to remove old version backup[y/n]").lower() == "y":
+            os.remove(backup_exe)
 else:
     try:
         tmp_path = os.path.join(os.path.dirname(sys.executable), f"new_{filename}")
@@ -50,8 +55,6 @@ else:
                     shutil.copyfileobj(r.raw, f)
             # stream download
             if file_sha256(tmp_path) == asset["digest"]:
-                current_exe = sys.executable
-                backup_exe = current_exe + ".bak"
                 os.rename(current_exe, backup_exe)
                 os.rename(tmp_path, current_exe)
                 subprocess.Popen([current_exe] + sys.argv[1:])

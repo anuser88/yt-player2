@@ -28,10 +28,21 @@ jobs:
       - name: Build executable
         run: pyinstaller --onefile src/main.py
 
+      - name: Rename output
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            mv dist/main.exe dist/main-windows.exe
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
+            mv dist/main dist/main-linux
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            mv dist/main dist/main-macos
+          fi
+        shell: bash
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ matrix.os }}
+          name: ${{ matrix.os }}
           path: dist/
   
   release:
@@ -62,12 +73,14 @@ jobs:
         uses: actions/download-artifact@v4
 
       - name: Create Release
-        id: release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.gen.outputs.tag }}
           name: Release ${{ steps.gen.outputs.tag }}
           files: |
-            */*
+            ubuntu-latest/*
+            windows-latest/*
+            macos-latest/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

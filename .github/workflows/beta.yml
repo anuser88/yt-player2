@@ -1,0 +1,94 @@
+name: Build executables
+
+on:
+  workflow_dispatch:
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.gen.outputs.tag }}
+    steps:
+      - name: Generate date tag
+        id: gen
+        run: |
+          TAG="v$(date +'%Y.%m.%d-beta%H%M')"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Generated tag: $TAG"
+  build:
+    needs: version
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Write version file
+        run: echo ${{ needs.version.outputs.tag }} > src/version.txt
+        shell: bash
+
+      - name: Build executable
+        run: pyinstaller --onefile src/main.py
+
+      - name: Rename output
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            mv dist/main.exe dist/main-windows.exe
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
+            mv dist/main dist/main-linux
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            mv dist/main dist/main-macos
+          fi
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}
+          path: dist/
+  
+  release:
+    needs: [version, build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Push tag
+        env:
+          TOKEN: ${{ secrets.PAT }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag ${{ needs.version.outputs.tag }}
+          git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }} ${{ needs.version.outputs.tag }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: Release ${{ needs.version.outputs.tag }}
+          files: |
+            ubuntu-latest/*
+            windows-latest/*
+            macos-latest/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

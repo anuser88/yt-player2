@@ -5,22 +5,26 @@ on:
 
 jobs:
   build:
-    runs-on: ${{matrix.os}}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
+
       - name: Build executable
         run: pyinstaller --onefile src/main.py
 
@@ -28,13 +32,22 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-${{ matrix.os }}
-          path: release/
+          path: dist/
+  
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Generate date tag
         id: gen
         run: |
           TAG="v$(date +'%Y.%m.%d-%H%M%S')"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Generated tag: $TAG"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Push tag
         env:
@@ -44,18 +57,17 @@ jobs:
           git config user.email "github-actions@github.com"
           git tag ${{ steps.gen.outputs.tag }}
           git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }} ${{ steps.gen.outputs.tag }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
       - name: Create Release
         id: release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.gen.outputs.tag }}
           name: Release ${{ steps.gen.outputs.tag }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload asset
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.gen.outputs.tag }}
-          files: release/*
+          files: |
+            */*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -142,7 +142,7 @@ def prompt(q,frame,ex):
             return
 
 def start():
-    print("\nyt-player2 " + updater.CURRENT_VERSION)    
+    print("\nyt-player2 " + CURRENT_VERSION)    
     root = tk.Tk()
     root.title("YouTube Search")
     canvas = tk.Canvas(root, width=450, height=600)

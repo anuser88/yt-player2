@@ -70,7 +70,7 @@ class exited:
     def stat(self):
         return self.e
 
-def search(resn=5,query,q):
+def search(query,q,resn=5):
     recommendations = []
     ydl_opts = {
         'extract_flat': True,
@@ -131,7 +131,7 @@ def prompt(q,frame,ex):
             print("Type 'clear' to clear search result")
             print("Type 'exit' to quit")
         if inp=="search":
-            print(f"Searched in {search(query=input('Search anything: '),q=q,resn=input("Number of result"))} sec")
+            print(f"Searched in {search(input('Search anything: '),q,resn=input("Number of result"))} sec")
             print("Rendering...")
         if inp=="clear":
             clear_rec(frame)

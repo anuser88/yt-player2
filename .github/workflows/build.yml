@@ -83,8 +83,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ needs.version.outputs.tag }}
-          name: Release ${{ needs.version.outputs.tag }}
+          tag_name: ${{ jobs.version.outputs.tag }}
+          name: Release ${{ jobs.version.outputs.tag }}
           files: |
             ubuntu-latest/*
             windows-latest/*

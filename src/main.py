@@ -14,42 +14,33 @@ import yt_dlp
 import dependencies
 import video
 
-UPDATE = False
-def resource_path(rel):
-    if hasattr(sys, "_MEIPASS"):
-        return os.path.join(sys._MEIPASS, rel)
-    return os.path.join(os.path.abspath("."), rel)
-file_path = resource_path("version.txt")
-with open(file_path, "r", encoding="utf-8") as f:
-    CURRENT_VERSION = f.read()
-    f.close()
+url = "https://api.github.com/repos/anuser88/yt-player2/releases/latest"
 def file_sha256(path):
     hash_sha256 = hashlib.sha256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_sha256.update(chunk)
     return "sha256:" + hash_sha256.hexdigest()
-url = "https://api.github.com/repos/anuser88/yt-player2/releases/latest"
+assets = release["assets"]
+osname = platform.system()
+if osname == "Windows":
+    asset = assets[2]
+if osname == "Linux":
+    asset = assets[0]
+if osname == "Darwin":
+    asset = assets[1]
+download_url = asset["browser_download_url"]
+filename = asset["name"]
 r = requests.get(url)
 r.raise_for_status()
 release = r.json()
 latest_version = release["tag_name"]
-if latest_version == CURRENT_VERSION or getattr(sys, "frozen", False):
+CURRENT_VERSION="version-unknown"
+if file_sha256(sys.executable) == asset["digest"] or getattr(sys, "frozen", False):
+    CURRENT_VERSION=latest_version
     print("Already up-to-date")
 else:
-    UPDATE = True
-if UPDATE:
     try:
-        assets = release["assets"]
-        osname = platform.system()
-        if osname == "Windows":
-            asset = assets[2]
-        if osname == "Linux":
-            asset = assets[0]
-        if osname == "Darwin":
-            asset = assets[1]
-        download_url = asset["browser_download_url"]
-        filename = asset["name"]
         tmp_path = os.path.join(os.path.dirname(sys.executable), f"new_{filename}")
         for i in range(0, 3):
             print("Attempt #" + str(i + 1))

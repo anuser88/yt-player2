@@ -7,6 +7,7 @@ import sys
 import threading
 import time
 import tkinter as tk
+import updater
 import video
 import yt_dlp
 
@@ -90,7 +91,7 @@ def prompt(q,frame,ex):
             return
 
 def start():
-    print("\nyt-player2 v1.0.2")    
+    print("\nyt-player2 " + updater.CURRENT_VERSION)    
     root = tk.Tk()
     root.title("YouTube Search")
     canvas = tk.Canvas(root, width=450, height=600)

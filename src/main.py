@@ -70,7 +70,7 @@ class exited:
     def stat(self):
         return self.e
 
-def search(query,q):
+def search(resn=5,query,q):
     recommendations = []
     ydl_opts = {
         'extract_flat': True,
@@ -84,7 +84,7 @@ def search(query,q):
     }
     t=time.time()
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(f"ytsearch50:{query}", download=False)
+        info = ydl.extract_info(f"ytsearch{resn}:{query}", download=False)
         for entry in info['entries']:
             q.put({
                 "title": entry.get('title'),
@@ -131,7 +131,7 @@ def prompt(q,frame,ex):
             print("Type 'clear' to clear search result")
             print("Type 'exit' to quit")
         if inp=="search":
-            print(f"Searched in {search(input('Search anything: '),q)} sec")
+            print(f"Searched in {search(query=input('Search anything: '),q=q,resn=input("Number of result"))} sec")
             print("Rendering...")
         if inp=="clear":
             clear_rec(frame)

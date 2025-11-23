@@ -36,7 +36,7 @@ download_url = asset["browser_download_url"]
 filename = asset["name"]
 latest_version = release["tag_name"]
 CURRENT_VERSION="version-unknown"
-if file_sha256(sys.executable) == asset["digest"] or getattr(sys, "frozen", False):
+if file_sha256(sys.executable) == asset["digest"] or not getattr(sys, "frozen", False):
     CURRENT_VERSION=latest_version
     print("Already up-to-date")
 else:

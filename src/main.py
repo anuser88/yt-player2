@@ -15,6 +15,9 @@ import dependencies
 import video
 
 url = "https://api.github.com/repos/anuser88/yt-player2/releases/latest"
+r = requests.get(url)
+r.raise_for_status()
+release = r.json()
 def file_sha256(path):
     hash_sha256 = hashlib.sha256()
     with open(path, "rb") as f:
@@ -31,9 +34,6 @@ if osname == "Darwin":
     asset = assets[1]
 download_url = asset["browser_download_url"]
 filename = asset["name"]
-r = requests.get(url)
-r.raise_for_status()
-release = r.json()
 latest_version = release["tag_name"]
 CURRENT_VERSION="version-unknown"
 if file_sha256(sys.executable) == asset["digest"] or getattr(sys, "frozen", False):

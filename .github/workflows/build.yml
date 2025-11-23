@@ -4,7 +4,18 @@ on:
   workflow_dispatch:
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate date tag
+        id: gen
+        run: |
+          TAG="v$(date +'%Y.%m.%d-%S%H%M')"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Generated tag: $TAG"
   build:
+    needs: version
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -24,6 +35,10 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
+
+      - name: Write version file
+        run: echo ${{ needs.version.outputs.tag }} > src/version.txt
+        shell: bash
 
       - name: Build executable
         run: pyinstaller --onefile src/main.py
@@ -46,17 +61,10 @@ jobs:
           path: dist/
   
   release:
-    needs: build
+    needs: [version, build]
     runs-on: ubuntu-latest
 
     steps:
-      - name: Generate date tag
-        id: gen
-        run: |
-          TAG="v$(date +'%Y.%m.%d-%H%M%S')"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Generated tag: $TAG"
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -66,8 +74,8 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git tag ${{ steps.gen.outputs.tag }}
-          git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }} ${{ steps.gen.outputs.tag }}
+          git tag ${{ needs.version.outputs.tag }}
+          git push https://x-access-token:${TOKEN}@github.com/${{ github.repository }} ${{ needs.version.outputs.tag }}
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -75,12 +83,11 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.gen.outputs.tag }}
-          name: Release ${{ steps.gen.outputs.tag }}
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: Release ${{ needs.version.outputs.tag }}
           files: |
             ubuntu-latest/*
             windows-latest/*
             macos-latest/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

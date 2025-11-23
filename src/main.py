@@ -15,7 +15,12 @@ import dependencies
 import video
 
 UPDATE = False
-with open("version.txt","r") as f:
+def resource_path(rel):
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, rel)
+    return os.path.join(os.path.abspath("."), rel)
+file_path = resource_path("version.txt")
+with open(file_path, "r", encoding="utf-8") as f:
     CURRENT_VERSION = f.read()
     f.close()
 def file_sha256(path):

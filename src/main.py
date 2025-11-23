@@ -1,14 +1,14 @@
 import dependencies
+import updater
+import video
 from io import BytesIO
 from PIL import Image, ImageTk
+import tkinter as tk
 import queue
 import requests
 import sys
 import threading
 import time
-import tkinter as tk
-import updater
-import video
 import yt_dlp
 
 class exited:

@@ -40,7 +40,7 @@ jobs:
       - name: Build executable
         run: |
           echo ${{ needs.version.outputs.tag }} > src/version.txt
-          pyinstaller --onefile src/main.py
+          pyinstaller --onefile src/main.py --add-data "src/version.txt:version.txt"
         shell: bash
 
       - name: Rename output

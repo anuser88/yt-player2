@@ -63,7 +63,7 @@ if UPDATE:
                 # restart
         os.remove(tmp_path)
         raise Exception("download failed")
-    except Exception as e
+    except Exception as e:
         print("update failed: " + e)
 
 class exited:

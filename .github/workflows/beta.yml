@@ -37,12 +37,11 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Write version file
-        run: echo ${{ needs.version.outputs.tag }} > src/version.txt
-        shell: bash
-
       - name: Build executable
-        run: pyinstaller --onefile src/main.py
+        run: |
+          echo ${{ needs.version.outputs.tag }} > src/version.txt
+          pyinstaller --onefile src/main.py
+        shell: bash
 
       - name: Rename output
         run: |

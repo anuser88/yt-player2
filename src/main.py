@@ -7,12 +7,20 @@ import subprocess
 import sys
 import threading
 import time
-from PIL import Image, ImageTk
-import requests
-import tkinter as tk
-import yt_dlp
-import dependencies
-import video
+current_exe = sys.executable
+try:
+    from PIL import Image, ImageTk
+    import requests
+    import tkinter as tk
+    import yt_dlp
+    import dependencies
+    import video
+except Exception as e:
+    print("error importing: "+e)
+    time.sleep(1)
+    subprocess.Popen([current_exe] + sys.argv[1:])
+    time.sleep(1)
+    sys.exit(0)
 
 url = "https://api.github.com/repos/anuser88/yt-player2/releases/latest"
 r = requests.get(url)
@@ -35,7 +43,6 @@ if osname == "Darwin":
 download_url = asset["browser_download_url"]
 filename = asset["name"]
 latest_version = release["tag_name"]
-current_exe = sys.executable
 backup_exe = current_exe + ".bak"
 CURRENT_VERSION="version-unknown"
 if file_sha256(current_exe) == asset["digest"] or not getattr(sys, "frozen", False):
@@ -47,8 +54,9 @@ if file_sha256(current_exe) == asset["digest"] or not getattr(sys, "frozen", Fal
 else:
     try:
         tmp_path = os.path.join(os.path.dirname(sys.executable), f"new_{filename}")
+        print("trying to update")
         for i in range(0, 3):
-            print("Attempt #" + str(i + 1))
+            print("attempt #" + str(i + 1))
             with requests.get(download_url, stream=True) as r:
                 r.raise_for_status()
                 with open(tmp_path, "wb") as f:
@@ -57,7 +65,9 @@ else:
             if file_sha256(tmp_path) == asset["digest"]:
                 os.rename(current_exe, backup_exe)
                 os.rename(tmp_path, current_exe)
+                time.sleep(1)
                 subprocess.Popen([current_exe] + sys.argv[1:])
+                time.sleep(1)
                 sys.exit(0)
                 # restart
         os.remove(tmp_path)
@@ -134,7 +144,7 @@ def prompt(q,frame,ex):
             print("Type 'clear' to clear search result")
             print("Type 'exit' to quit")
         if inp=="search":
-            print(f"Searched in {search(input('Search anything: '),q,resn=input("Number of result"))} sec")
+            print(f"Searched in {search(input('Search anything: '),q,resn=input("Number of result: "))} sec")
             print("Rendering...")
         if inp=="clear":
             clear_rec(frame)

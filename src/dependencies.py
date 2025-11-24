@@ -35,7 +35,7 @@ def download_ffmpeg_windows(dest_folder):
     return bin_path
 
 def download_ffmpeg_unix(dest_folder):
-    url = "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz"
+    url = "https://ffmpeg.org/releases/ffmpeg-8.0.1.tar.xz"
     tar_path = os.path.join(dest_folder, "ffmpeg.tar.xz")
     os.makedirs(dest_folder, exist_ok=True)
     print("Downloading FFmpeg for Unix...")

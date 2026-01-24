@@ -104,6 +104,7 @@ def search(query,q,resn=5):
                 "link": entry.get('webpage_url'),
                 "id": entry.get('id')
             })
+            print(entry.get('webpage_url'))
     return time.time()-t
 
 # --- GUI ---
